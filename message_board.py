@@ -10,8 +10,6 @@ import urllib2
 # import sys
 # sys.path.append('/home/oraclech/src/lib/python/')
 
-# import mx.DateTime
-
 
 class Connection:
   """This class defines an interface to the GameFAQs message boards.
@@ -116,7 +114,7 @@ class Parser:
     retval = []
 
     # Regexp for extracting poster, date, and message text.
-    field_pattern = (r'<a[^<>]*?class="name"><b>([^<>]+)</b>*?<span class="post_time" title="\s*([^"]+)"*?<div class="msg_body newbeta"*?>([^<]+)</div>')
+    field_pattern = (r'data-username="([^<>]+)".*?<span class="post_time" title="\s*([^"]+)">.*?<div class="msg_body_box" id="msg_(?:\d+)">(.+?)<div class="signature">')
     field_re = re.compile(field_pattern, re.S + re.I)
 
     for message in messages:
@@ -124,11 +122,9 @@ class Parser:
       match = field_re.search(message)
 
       parsedm['User'] = match.group(1)
-      parsedm['Timestamp'] = datetime(*(time.strptime(
-        match.group(2).replace('&nbsp;', ''),
+      parsedm['Timestamp'] = datetime.datetime(*(time.strptime(
+        match.group(2).replace('&nbsp;', ' '),
         '%m/%d/%Y %I:%M:%S %p')[0:6]))
-#      parsedm['Timestamp'] = mx.DateTime.strptime(match.group(2).replace('&nbsp;', ''),
-#                                                  '%m/%d/%Y %I:%M:%S %p')
       parsedm['Text'] = match.group(3)
       parsedm['Text'] = parsedm['Text'].replace('\n', '')
 
