@@ -73,12 +73,10 @@ class Parser:
 
     # Start by getting the topic title and ID.
 
-    page_re = re.compile(r'r=www.gamefaqs.com%2Fboards%2F8-gamefaqs-contests%2F(\d+)'
-                         '&(?:amp;)?page=\d+">\w+\s*Page', re.I + re.S)
+    page_re = re.compile(r'https://gamefaqs.gamespot.com/boards/8-gamefaqs-contests/(\d+)\page=(\d+)',
+                         re.I + re.S)
     title_re = re.compile(r'<div class="head"><h2 class="title title_nocap">\s*([^<>]+?)\s*</h2></div>',
                           re.I + re.S)
-#    title_re = re.compile(r'<div class="head"><h2 class="title title_nocap">\s+([^<>]+?)\s*</h2></div>',
-#                          re.I + re.S)
 
     if page_re.search(page) is not None:
       topic_id = page_re.search(page).group(1)
