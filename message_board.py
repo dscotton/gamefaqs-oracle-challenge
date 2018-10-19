@@ -125,7 +125,8 @@ class Parser:
       parsedm['Timestamp'] = datetime.datetime(*(time.strptime(
         match.group(2).replace('&nbsp;', ' '),
         '%m/%d/%Y %I:%M:%S %p')[0:6]))
-      parsedm['Text'] = match.group(3)
+      parsedm['Text'] = re.sub(r'<blockquote>.*?</blockquote>',
+        '', match.group(3))
       parsedm['Text'] = parsedm['Text'].replace('\n', '')
 
       parsedm['TopicId'] = topic_id
