@@ -75,15 +75,18 @@ class ResultUpdater(object):
     # opener = urllib2.build_opener(proxy_handler)
     # urllib2.install_opener(opener)
 
-    url = 'http://www.gamefaqs.com/poll/index.html?poll=%d' % int(poll_id)
-    page = urllib2.urlopen(url)
-    text = page.read()
+    url = 'https://gamefaqs.gamespot.com/poll/%d' % int(poll_id)
+    req = urllib2.Request(url)
+    req.add_header('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36')
+    resp = urllib2.urlopen(req)
+    text = resp.read()
 
     results = []
 
     # One RE for all competitors, find all matches.
-    result_re = re.compile(r'<th>([^<>]+)</th>\s*<td>(\d+\.?\d{0,2})%'
-                           '.*?<td>(\d+)</td>', re.S)
+    result_re = re.compile(r'<tr>\s+<td class="question">([^<>]+)</td>\s*'
+                           '<td class="percent">(\d+\.?\d{0,2})%</td>'
+                           '.*?<td class="votes">(\d+)</td>', re.S)
     matches = result_re.findall(text)
     if not matches:
       raise Exception, 'no results'
