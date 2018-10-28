@@ -36,10 +36,11 @@ def main():
 
   """
 
-  db_user = raw_input('DB username: ')
+  # db_user = raw_input('DB username: ')
+  db_user = 'oraclech'
   pw = getpass.getpass()
 
-  odb = oracle_db.OracleDb(db_user, pw, database='oraclech_oracle')
+  odb = oracle_db.OracleDb(db_user, pw, database='oraclech_new')
 
   contest_id = raw_input('Current Contest ID? ')
   round_num = raw_input('Current Round Number? ')
@@ -69,6 +70,7 @@ def main():
     message['Timestamp'] -= datetime.timedelta(minutes=TIME_OFFSET)
     ParsePredictions(odb, message, contest, round_nums)
 
+  odb.Commit()
 
 def ParsePredictions(odb, message, contest, round_nums):
   """This function parses the predictions in one individual message.
@@ -111,14 +113,14 @@ def ParsePredictions(odb, message, contest, round_nums):
 
   # Split the message into lines so we can examine each for predictions.
 
-  pattern = ('^\d*\s*(.*?)\s*'
+  pattern = ('^\s*(.*?)\s*'
              '(?:over .*?)?'
              '(?:with\s*)?'
              '(?:w/\s*)?'
              '(?:\W\s*)?'
              '(\d{1,3}[,\.]?\d*)\s*%')
   prediction_re = re.compile(pattern)
-  lines = re.split('(?:<br/>)+', message['Text'])
+  lines = re.split('(?:<br />)+', message['Text'])
   for line in lines:
     match = prediction_re.search(line)
 
@@ -162,7 +164,7 @@ def ParsePredictions(odb, message, contest, round_nums):
         # Check if the prediction is late.
 
         match_info = odb.GetMatches(match_id=match_id)
-        time_margin = datetime.timedelta(minutes=180)
+        time_margin = datetime.timedelta(minutes=0)
         if message['Timestamp'] + time_margin >= match_info[0]['MatchDate']:
           print '\nAccept late prediction from %s posted at %s?' \
               % (message['User'], message['Timestamp'])

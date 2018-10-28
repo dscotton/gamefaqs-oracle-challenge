@@ -5,10 +5,9 @@
 
 import datetime
 import re
+import time
 import urllib
 import urllib2
-# import sys
-# sys.path.append('/home/oraclech/src/lib/python/')
 
 
 class Connection:
@@ -114,12 +113,14 @@ class Parser:
     retval = []
 
     # Regexp for extracting poster, date, and message text.
-    field_pattern = (r'data-username="([^<>]+)".*?<span class="post_time" title="\s*([^"]+)">.*?<div class="msg_body_box" id="msg_(?:\d+)">(.+?)<div class="signature">')
+    field_pattern = (r'data-username="([^<>]+)".*?<span class="post_time" title="\s*([^"]+)">.*?<div class="msg_body newbeta" data-msgnum="(?:\d+)" name="(?:\d+)">(.+?)<div')
     field_re = re.compile(field_pattern, re.S + re.I)
 
     for message in messages:
       parsedm = {}
       match = field_re.search(message)
+      if match is None:
+        print message
 
       parsedm['User'] = match.group(1)
       parsedm['Timestamp'] = datetime.datetime(*(time.strptime(

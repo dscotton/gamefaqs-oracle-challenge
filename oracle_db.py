@@ -31,6 +31,9 @@ class OracleDb:
     self.__conn = MySQLdb.connect(db=database, user=user, passwd=pw)
     self.__dbh = self.__conn.cursor(cursorclass=MySQLdb.cursors.DictCursor)
 
+  def Commit(self):
+      self.__conn.commit()
+
   def AddUser(self, username):
     """Add a user to the database.
 
