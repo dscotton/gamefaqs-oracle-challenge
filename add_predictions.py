@@ -52,7 +52,7 @@ def main():
 
   try:
     file_path = '%s/r%dt%dp%02d.html' % (contest['Name'].lower(),
-                                         int(round_nums[-1:]),
+                                         int(round_nums[-1]),
                                          int(topic_num),
                                          int(page_num))
     file_path = '/home/oraclech/topics/' + file_path
