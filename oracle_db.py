@@ -13,7 +13,7 @@ import MySQLdb
 class OracleDb:
   """This class represents a connection to the Oracle database."""
 
-  def __init__(self, user, pw, database='oraclech_oracle'):
+  def __init__(self, user, pw, database='oraclech_new'):
     """Instantiate a connection to the database.
 
     @param user: The username to use when connecting to the MySQL server.
@@ -439,6 +439,26 @@ class OracleDb:
 
     self.__dbh.execute(mysql)
     result = self.__dbh.fetchone()
+    return result
+
+  def GetPastUnrecordedMatches(self, duration=24):
+    """Get all matches that happened in the past that don't have results.
+
+    Used to determine which results pages to attempt to scrape.
+    """
+    
+    timestamp = datetime.datetime.now() - datetime.timedelta(hours=duration)
+
+    mysql = """
+      SELECT *
+      FROM Matches
+      WHERE MatchDate < "%s"
+      AND MatchId IN 
+        (SELECT MatchId FROM Results WHERE Percentage IS NULL GROUP BY MatchId)
+      ORDER BY MatchDate DESC
+    """ % (timestamp)
+    self.__dbh.execute(mysql)
+    result = self.__dbh.fetchall()
     return result
 
   def AddNewMatch(self, match_num, round_num, contest_id, division_id,

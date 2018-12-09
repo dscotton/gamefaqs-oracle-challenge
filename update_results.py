@@ -13,7 +13,8 @@ import urllib2
 
 import oracle_db
 
-DB_USER = raw_input('DB username: ')
+# DB_USER = raw_input('DB username: ')
+DB_USER = 'oraclech'
 PW = getpass.getpass()
 
 
@@ -43,7 +44,7 @@ class ResultUpdater(object):
     """Class constructor."""
 
     self.__odb = oracle_db.OracleDb(DB_USER, PW,
-                                    database='oraclech_oracle')
+                                    database='oraclech_new')
 
   def GetLastMatch(self):
     """Get information about the most recent GameFAQs match.
@@ -80,7 +81,6 @@ class ResultUpdater(object):
     req.add_header('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36')
     resp = urllib2.urlopen(req)
     text = resp.read()
-
     results = []
 
     # One RE for all competitors, find all matches.
@@ -96,31 +96,34 @@ class ResultUpdater(object):
                             'Votes' : match[2]}
       results.append(competitor_results)
 
+    print "In page %s found results:" % (url, )
+    print results
     return results
 
   def AddResults(self):
     """Main function for recording the latest poll results."""
 
-    match = self.GetLastMatch()
-    contest = self.__odb.GetContest(match['ContestId'])
-    results = self.GetPollResults(match['PollId'])
+    matches = self.__odb.GetPastUnrecordedMatches()
+    for match in matches:
+      contest = self.__odb.GetContest(match['ContestId'])
+      results = self.GetPollResults(match['PollId'])
 
-    total_votes = 0
-    for res in results:
-      total_votes += int(res['Votes'])
-    for r in results:
-      is_winner = 0
-      if int(r['Votes']) > (total_votes / 2):
-        is_winner = 1
-      if contest['CompetitorsPerMatch'] > 2:
-        is_winner = None
-      comp = self.__odb.GetCompetitorIdInMatch(r['Name'], match['MatchId'])
-      if not comp:
-        raise ValueError, 'Couldn\'t find %s' % r['Name']
-      self.__odb.AddResult(match['MatchId'], comp['CompetitorId'],
-                           votes=r['Votes'], percentage=r['Percentage'],
-                           is_winner=is_winner)
-
+      total_votes = 0
+      for res in results:
+        total_votes += int(res['Votes'])
+      for res in results:
+        is_winner = 0
+        if int(res['Votes']) > (total_votes / 2):
+          is_winner = 1
+        if contest['CompetitorsPerMatch'] > 2:
+          is_winner = None
+        comp = self.__odb.GetCompetitorIdInMatch(res['Name'], match['MatchId'])
+        if not comp:
+          raise ValueError, 'Couldn\'t find %s' % res['Name']
+        self.__odb.AddResult(match['MatchId'], comp['CompetitorId'],
+                             votes=res['Votes'], percentage=res['Percentage'],
+                             is_winner=is_winner)
+        self.__odb.Commit()
 
 def main():
   ur = ResultUpdater()

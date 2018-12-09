@@ -72,7 +72,7 @@ class Parser:
 
     page_re = re.compile(r'https://gamefaqs.gamespot.com/boards/8-gamefaqs-contests/(\d+)\page=(\d+)',
                          re.I + re.S)
-    title_re = re.compile(r'<div class="head"><h2 class="title title_nocap">\s*([^<>]+?)\s*</h2></div>',
+    title_re = re.compile(r'<h1 class="page-title">\s*([^<>]+?)\s*<span class="h1_name">',
                           re.I + re.S)
 
     if page_re.search(page) is not None:
@@ -120,7 +120,9 @@ class Parser:
       parsedm = {}
       match = field_re.search(message)
       if match is None:
+        print "No matches found in:"
         print message
+        break
 
       parsedm['User'] = match.group(1)
       parsedm['Timestamp'] = datetime.datetime(*(time.strptime(
