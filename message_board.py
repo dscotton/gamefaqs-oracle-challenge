@@ -72,7 +72,7 @@ class Parser:
 
     page_re = re.compile(r'https://gamefaqs.gamespot.com/boards/8-gamefaqs-contests/(\d+)\page=(\d+)',
                          re.I + re.S)
-    title_re = re.compile(r'<h1 class="page-title">\s*([^<>]+?)\s*<span class="h1_name">',
+    title_re = re.compile(r'<h1 class="page-title">\s*([^<>]+?)\s*</h1>',
                           re.I + re.S)
 
     if page_re.search(page) is not None:
