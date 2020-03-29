@@ -117,7 +117,7 @@ def ParsePredictions(odb, message, contest, round_nums):
              '(?:over .*?)?'
              '(?:with\s*)?'
              '(?:w/\s*)?'
-             '(?:\W\s*)?'
+             '(?:\W+\s*)?'
              '(\d{1,3}[,\.]?\d*)\s*%')
   prediction_re = re.compile(pattern)
   lines = re.split('(?:<br />)+', message['Text'])
