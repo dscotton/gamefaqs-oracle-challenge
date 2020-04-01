@@ -122,7 +122,7 @@ class Parser:
       if match is None:
         print "No matches found in:"
         print message
-        break
+        continue
 
       parsedm['User'] = match.group(1)
       parsedm['Timestamp'] = datetime.datetime(*(time.strptime(
