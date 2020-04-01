@@ -58,11 +58,27 @@ class ResultUpdater(object):
     yesterday = now - datetime.timedelta(hours=12)
     return self.__odb.GetMatchByDate(yesterday)
 
-  def GetPollResults(self, poll_id):
+  def GetPollResults(self, poll_id, div_num=None, round_num=None, comp1=None, comp2=None):
     """Get the results of a specific poll.
 
     @param poll_id: The number of the GameFAQs poll to get results for.
     @type poll_id: int
+
+    Note: Below params are currently optional but we may need to use
+    them to construct the proper poll URL if the current redirection
+    stops working.
+
+    @param div_num: The number of the division the match is in.
+    @type div_num: int
+
+    @param round_num: The number of the round the match is in.
+    @type round_num: int
+
+    @param comp1: The short name of the first competitor in the match.
+    @type comp1: str
+
+    @param comp2: The short name of the second competitor in the match.
+    @type comp2: str
 
     @return: A tuple containing results for each entry.  Each entry has
              a dict with keys 'Name', 'Votes', and 'Percentage'.
@@ -76,7 +92,14 @@ class ResultUpdater(object):
     # opener = urllib2.build_opener(proxy_handler)
     # urllib2.install_opener(opener)
 
-    url = 'https://gamefaqs.gamespot.com/poll/%d' % int(poll_id)
+    url_name = lambda name: re.sub('[^a-zA-Z\d\s]', '', name).lower()
+
+    url = 'https://gamefaqs.gamespot.com/poll/%d-' % int(poll_id)
+    # This is the proper URL format. For now we can get a redirect by using the URL,
+    # but gamefaqs has already broken this once (it used to work without the trailing
+    # dash)
+    # url = 'https://gamefaqs.gamespot.com/poll/%d-division-%d-round-%d-%s-vs-%s' % (
+    #   int(poll_id), int(div_num), int(round_num), url_name(comp1), url_name(comp2))
     req = urllib2.Request(url)
     req.add_header('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36')
     resp = urllib2.urlopen(req)
@@ -89,7 +112,7 @@ class ResultUpdater(object):
                            '.*?<td class="votes">(\d+)</td>', re.S)
     matches = result_re.findall(text)
     if not matches:
-      raise Exception, 'no results'
+      raise Exception, 'No results found in ' + url
     for match in matches:
       competitor_results = {'Name' : match[0],
                             'Percentage' : match[1],
@@ -106,6 +129,9 @@ class ResultUpdater(object):
     matches = self.__odb.GetPastUnrecordedMatches()
     for match in matches:
       contest = self.__odb.GetContest(match['ContestId'])
+      # Not needed right now, but will be needed if we have to
+      # construct the full results URL.
+      # division = self.__odb.GetDivision(match['DivisionId'])
       results = self.GetPollResults(match['PollId'])
 
       total_votes = 0

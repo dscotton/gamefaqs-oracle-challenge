@@ -655,6 +655,22 @@ class OracleDb:
     else:
       return None
 
+  def GetDivision(self, division_id):
+    """Get a specific division."""
+    query = """
+      SELECT *
+      FROM Divisions
+      WHERE Id=%s
+    """ % (division_id)
+
+    self.__dbh.execute(query)
+    results = self.__dbh.fetchall()
+
+    if results:
+      return results[0]
+    else:
+      return None
+
   def AddResult(self, match_id, competitor_id, votes=None, percentage=None,
                 is_winner=None):
     """Add a result to our results table.
@@ -687,6 +703,13 @@ class OracleDb:
     if is_winner is None:
       is_winner = 'NULL'
 
+    # This shouldn't be necessary, but the DB started throwing Integrity errors on
+    # INSERT, UPDATE, and INSERT ON DUPLICATE KEY UPDATE statements. The only way
+    # around it seems to be delete and then insert.
+    delete_statement = 'DELETE FROM Results WHERE MatchId=%d AND CompetitorId=%d' % (
+      match_id, competitor_id)
+    self.__dbh.execute(delete_statement)
+
     mysql = """
       INSERT
       INTO Results
@@ -698,18 +721,8 @@ class OracleDb:
     try:
       self.__dbh.execute(mysql)
     except:
-      mysql = """
-        UPDATE Results
-        SET
-          Votes = %s,
-          Percentage = %s,
-          IsWinner = %s
-        WHERE
-          MatchId = %s AND
-          CompetitorId = %s
-      """ % (votes, percentage, is_winner, match_id, competitor_id)
-
-      self.__dbh.execute(mysql)
+      print('Error executing: ' + mysql)
+      raise
 
   def AddCompetitor(self, name, description=None):
     """Add a competitor to the Competitors table.
@@ -813,6 +826,34 @@ class OracleDb:
 
     self.__dbh.execute(mysql)
     result = self.__dbh.fetchone()
+
+    if result:
+      return result
+    else:
+      return None
+
+  def GetCompetitorsInMatch(self, match_id):
+    """Get all competitors in a given match.
+
+    @param match_id: The ID of the match these results correspond to.
+    @type  match_id: integer
+
+    @return: All competitors in the match.
+    @rtype: List of dicts
+
+    """
+
+    mysql = """
+      SELECT *
+      FROM
+        Competitors c, Results r
+      WHERE
+        c.CompetitorId = r.CompetitorId
+        AND r.MatchId = %d
+    """ % (name, int(match_id))
+
+    self.__dbh.execute(mysql)
+    result = self.__dbh.fetchall()
 
     if result:
       return result
