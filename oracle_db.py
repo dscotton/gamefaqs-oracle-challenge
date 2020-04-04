@@ -703,19 +703,16 @@ class OracleDb:
     if is_winner is None:
       is_winner = 'NULL'
 
-    # This shouldn't be necessary, but the DB started throwing Integrity errors on
-    # INSERT, UPDATE, and INSERT ON DUPLICATE KEY UPDATE statements. The only way
-    # around it seems to be delete and then insert.
-    delete_statement = 'DELETE FROM Results WHERE MatchId=%d AND CompetitorId=%d' % (
-      match_id, competitor_id)
-    self.__dbh.execute(delete_statement)
-
     mysql = """
       INSERT
       INTO Results
       (MatchId, CompetitorId, Votes, Percentage, IsWinner)
       VALUES
-      (%s, %s, %s, %s, %s)
+      ({0}, {1}, {2}, {3}, {4})
+      ON DUPLICATE KEY UPDATE
+        Votes = {2},
+        Percentage = {3},
+        IsWinner = {4}
     """ % (match_id, competitor_id, votes, percentage, is_winner)
 
     try:
