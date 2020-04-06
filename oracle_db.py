@@ -713,7 +713,7 @@ class OracleDb:
         Votes = {2},
         Percentage = {3},
         IsWinner = {4}
-    """ % (match_id, competitor_id, votes, percentage, is_winner)
+    """.format(match_id, competitor_id, votes, percentage, is_winner)
 
     try:
       self.__dbh.execute(mysql)
